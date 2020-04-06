@@ -5,13 +5,13 @@
 template<typename KeyType, typename ValueType>
 class Map
 {
-public: 
-	enum NodeColor {BLACK, RED};
+public:
+	enum NodeColor { BLACK, RED };
 
 	class Node
 	{
 	public:
-		Node(NodeColor color, KeyType key, ValueType value, Node* parent = nullptr, Node* left = nullptr, Node* right = nullptr):
+		Node(NodeColor color, KeyType key, ValueType value, Node* parent = nullptr, Node* left = nullptr, Node* right = nullptr) :
 			color(color), key(key), value(value), parent(parent), left(left), right(right)
 		{
 		}
@@ -27,12 +27,12 @@ public:
 
 	Node* root = nullptr;
 
-	Node* sibling(Node* n)
+	Node* sibling(Node* node)
 	{
-		if (n == n->parent->left)
-			return n->parent->right;
+		if (node == node->parent->left)
+			return node->parent->right;
 		else
-			return n->parent->left;
+			return node->parent->left;
 	}
 
 	Node* grandparent(Node* node)
@@ -43,7 +43,7 @@ public:
 			return nullLeaf;
 	}
 
-	Node* uncle(struct Node* node)
+	Node* uncle(Node* node)
 	{
 		Node* g = grandparent(node);
 		if (g == nullLeaf)
@@ -54,35 +54,32 @@ public:
 			return g->left;
 	}
 
-	void replace_node(Node* n, Node* child) {
-		child->parent = n->parent;
-		if (n == n->parent->left) {
-			n->parent->left = child;
+	void replace_node(Node* node, Node* child) {
+		child->parent = node->parent;
+		if (node == node->parent->left) {
+			node->parent->left = child;
 		}
 		else {
-			n->parent->right = child;
+			node->parent->right = child;
 		}
 	}
 
-	void delete_one_child(Node* n)
+	void delete_one_child(Node* node)
 	{
-		/*
-		 * Condition: does not have more than one nonzero descendant.
-		 */
 		Node* child;
 
-		if (n->right == nullLeaf) child = n->left;
-		else child = n->right;
+		if (node->right == nullLeaf) child = node->left;
+		else child = node->right;
 
-		replace_node(n, child);
-		if (n->color == BLACK) {
+		replace_node(node, child);
+		if (node->color == BLACK) {
 			if (child->color == RED)
 				child->color = BLACK;
 			else
 				delete_case1(child);
 		}
 
-		if (n == root)
+		if (node == root)
 		{
 			delete root;
 			root = child;
@@ -137,150 +134,150 @@ public:
 			node->parent = left;
 	}
 
-	void insert_case1(Node* n)
+	void insert_case1(Node* node)
 	{
-		if (n->parent == nullLeaf)
-			n->color = BLACK;
+		if (node->parent == nullLeaf)
+			node->color = BLACK;
 		else
-			insert_case2(n);
+			insert_case2(node);
 	}
-	void insert_case2(Node* n)
+	void insert_case2(Node* node)
 	{
-		if (n->parent->color == BLACK)
+		if (node->parent->color == BLACK)
 			return; /* Tree is still valid */
 		else
-			insert_case3(n);
+			insert_case3(node);
 	}
-	void insert_case3(Node* n)
+	void insert_case3(Node* node)
 	{
-		Node* u = uncle(n), * g;
+		Node* u = uncle(node), * g;
 
 		if ((u != nullLeaf) && (u->color == RED)) {
-			// && (n->parent->color == RED) Второе условие проверяется в insert_case2, то есть родитель уже является красным.
-			n->parent->color = BLACK;
+			// && (node->parent->color == RED) Второе условие проверяется в insert_case2, то есть родитель уже является красным.
+			node->parent->color = BLACK;
 			u->color = BLACK;
-			g = grandparent(n);
+			g = grandparent(node);
 			g->color = RED;
 			insert_case1(g);
 		}
 		else {
-			insert_case4(n);
+			insert_case4(node);
 		}
 	}
-	void insert_case4(Node* n)
+	void insert_case4(Node* node)
 	{
-		Node* g = grandparent(n);
+		Node* g = grandparent(node);
 
-		if ((n == n->parent->right) && (n->parent == g->left)) {
-			rotate_left(n->parent);
+		if ((node == node->parent->right) && (node->parent == g->left)) {
+			rotate_left(node->parent);
 
 			/*
-			 * rotate_left can be performed as follows, given that there are already *g =  grandparent(n)
+			 * rotate_left может быть выполнен следующим образом, учитывая что уже есть *g =  grandparent(node)
 			 *
-			 * struct node *saved_p=g->left, *saved_left_n=n->left;
-			 * g->left=n;
-			 * n->left=saved_p;
+			 * struct node *saved_p=g->left, *saved_left_n=node->left;
+			 * g->left=node;
+			 * node->left=saved_p;
 			 * saved_p->right=saved_left_n;
 			 *
 			 */
 
-			n = n->left;
+			node = node->left;
 		}
-		else if ((n == n->parent->left) && (n->parent == g->right)) {
-			rotate_right(n->parent);
+		else if ((node == node->parent->left) && (node->parent == g->right)) {
+			rotate_right(node->parent);
 
 			/*
-			 * rotate_right can be performed as follows, given that there are already *g =  grandparent(n)
+			 * rotate_right может быть выполнен следующим образом, учитывая что уже есть *g =  grandparent(node)
 			 *
-			 * struct node *saved_p=g->right, *saved_right_n=n->right;
-			 * g->right=n;
-			 * n->right=saved_p;
+			 * struct node *saved_p=g->right, *saved_right_n=node->right;
+			 * g->right=node;
+			 * node->right=saved_p;
 			 * saved_p->left=saved_right_n;
 			 *
 			 */
 
-			n = n->right;
+			node = node->right;
 		}
-		insert_case5(n);
+		insert_case5(node);
 	}
-	void insert_case5(Node* n)
+	void insert_case5(Node* node)
 	{
-		Node* g = grandparent(n);
+		Node* g = grandparent(node);
 
-		n->parent->color = BLACK;
+		node->parent->color = BLACK;
 		g->color = RED;
-		if ((n == n->parent->left) && (n->parent == g->left)) {
+		if ((node == node->parent->left) && (node->parent == g->left)) {
 			rotate_right(g);
 		}
-		else { /* (n == n->parent->right) && (n->parent == g->right) */
+		else { /* (node == node->parent->right) && (node->parent == g->right) */
 			rotate_left(g);
 		}
 	}
 
-	void delete_case1(Node* n)
+	void delete_case1(Node* node)
 	{
-		if (n->parent != nullLeaf)
-			delete_case2(n);
+		if (node->parent != nullLeaf)
+			delete_case2(node);
 	}
-	void delete_case2(Node* n)
+	void delete_case2(Node* node)
 	{
-		Node* s = sibling(n);
+		Node* s = sibling(node);
 
 		if (s->color == RED) {
-			n->parent->color = RED;
+			node->parent->color = RED;
 			s->color = BLACK;
-			if (n == n->parent->left)
-				rotate_left(n->parent);
+			if (node == node->parent->left)
+				rotate_left(node->parent);
 			else
-				rotate_right(n->parent);
+				rotate_right(node->parent);
 		}
-		delete_case3(n);
+		delete_case3(node);
 	}
-	void delete_case3(Node* n)
+	void delete_case3(Node* node)
 	{
-		Node* s = sibling(n);
+		Node* s = sibling(node);
 
-		if ((n->parent->color == BLACK) &&
+		if ((node->parent->color == BLACK) &&
 			(s->color == BLACK) &&
 			(s->left->color == BLACK) &&
 			(s->right->color == BLACK)) {
 			s->color = RED;
-			delete_case1(n->parent);
+			delete_case1(node->parent);
 		}
 		else
-			delete_case4(n);
+			delete_case4(node);
 	}
-	void delete_case4(Node* n)
+	void delete_case4(Node* node)
 	{
-		Node* s = sibling(n);
+		Node* s = sibling(node);
 
-		if ((n->parent->color == RED) &&
+		if ((node->parent->color == RED) &&
 			(s->color == BLACK) &&
 			(s->left->color == BLACK) &&
 			(s->right->color == BLACK)) {
 			s->color = RED;
-			n->parent->color = BLACK;
+			node->parent->color = BLACK;
 		}
 		else
-			delete_case5(n);
+			delete_case5(node);
 	}
-	void delete_case5(Node* n)
+	void delete_case5(Node* node)
 	{
-		Node* s = sibling(n);
+		Node* s = sibling(node);
 
 		if (s->color == BLACK) { /* this if statement is trivial,
 	due to case 2 (even though case 2 changed the sibling to a sibling's child,
 	the sibling's child can't be red, since no red parent can have a red child). */
 	/* the following statements just force the red to be on the left of the left of the parent,
 	   or right of the right, so case six will rotate correctly. */
-			if ((n == n->parent->left) &&
+			if ((node == node->parent->left) &&
 				(s->right->color == BLACK) &&
 				(s->left->color == RED)) { /* this last test is trivial too due to cases 2-4. */
 				s->color = RED;
 				s->left->color = BLACK;
 				rotate_right(s);
 			}
-			else if ((n == n->parent->right) &&
+			else if ((node == node->parent->right) &&
 				(s->left->color == BLACK) &&
 				(s->right->color == RED)) {/* this last test is trivial too due to cases 2-4. */
 				s->color = RED;
@@ -288,64 +285,62 @@ public:
 				rotate_left(s);
 			}
 		}
-		delete_case6(n);
+		delete_case6(node);
 	}
-	void delete_case6(Node* n)
+	void delete_case6(Node* node)
 	{
-		Node* s = sibling(n);
+		Node* s = sibling(node);
 
-		s->color = n->parent->color;
-		n->parent->color = BLACK;
+		s->color = node->parent->color;
+		node->parent->color = BLACK;
 
-		if (n == n->parent->left) {
+		if (node == node->parent->left) {
 			s->right->color = BLACK;
-			rotate_left(n->parent);
+			rotate_left(node->parent);
 		}
 		else {
 			s->left->color = BLACK;
-			rotate_right(n->parent);
+			rotate_right(node->parent);
 		}
 	}
 
-	void tree_clearing(Node* root)
+	void tree_clearing(Node* nodeClearFrom)
 	{
-		if (root != nullptr && root != nullLeaf)
+		if (nodeClearFrom != nullptr && nodeClearFrom != nullLeaf)
 		{
-			tree_clearing(root->left);
-			tree_clearing(root->right);
-			delete root;
-			root = nullptr;
-		}
-		if (root == nullLeaf) root = nullptr;
-	}
-
-	void fillListOfValues(Node* root, List<ValueType>* list)
-	{
-		if (root != nullLeaf && root != nullptr)
-		{
-			list->push_back(root->value);
-			fillListOfValues(root->left, list);
-			fillListOfValues(root->right, list);
+			tree_clearing(nodeClearFrom->left);
+			tree_clearing(nodeClearFrom->right);
+			delete nodeClearFrom;
 		}
 	}
 
-	void fillListOfKeys(Node* root, List<KeyType>* list)
+	void fillListOfValues(Node* nodeFillFrom, List<ValueType>* list)
 	{
-		if (root != nullLeaf && root != nullptr)
+		if (nodeFillFrom != nullLeaf && nodeFillFrom != nullptr)
 		{
-			list->push_back(root->key);
-			fillListOfKeys(root->left, list);
-			fillListOfKeys(root->right, list);
+			list->push_back(nodeFillFrom->value);
+			fillListOfValues(nodeFillFrom->left, list);
+			fillListOfValues(nodeFillFrom->right, list);
 		}
 	}
 
-	void printToConsole(Node* root)
+	void fillListOfKeys(Node* nodeFillFrom, List<KeyType>* list)
 	{
-		if (root != nullLeaf)
+		if (nodeFillFrom != nullLeaf && nodeFillFrom != nullptr)
 		{
-			std::cout << "Key: " << root->key << " " << "Value: " << root->value << endl;
-			printToConsole(root->left);
-			printToConsole(root->right);
+			list->push_back(nodeFillFrom->key);
+			fillListOfKeys(nodeFillFrom->left, list);
+			fillListOfKeys(nodeFillFrom->right, list);
+		}
+	}
+
+	void printToConsole(Node* nodePrintFrom)
+	{
+		if (nodePrintFrom != nullLeaf)
+		{
+			std::cout << "Key: " << nodePrintFrom->key << " " << "Value: " << nodePrintFrom->value << endl;
+			printToConsole(nodePrintFrom->left);
+			printToConsole(nodePrintFrom->right);
 		}
 	}
 
@@ -356,12 +351,18 @@ public:
 		nullLeaf->right = nullptr;
 	}
 
+	~Map()
+	{
+		tree_clearing(root);
+		delete nullLeaf;
+	}
+
 
 	void insert(KeyType key, ValueType value)
 	{
 		Node* temporary = root;
 		Node* parent = nullLeaf;
-			
+
 		if (root == nullptr)
 		{
 			root = new Node(BLACK, key, value, parent, nullLeaf, nullLeaf);
@@ -405,11 +406,11 @@ public:
 
 		delete_one_child(temporary);
 	}
-	
+
 	ValueType find(KeyType key)
 	{
 		Node* temporary = root;
-		
+
 		if (root == nullptr) throw "No such key in a map";
 
 		while (temporary != nullLeaf && temporary->key != key)
@@ -419,7 +420,7 @@ public:
 			else temporary = temporary->right;
 		}
 
-		if(temporary == nullLeaf)
+		if (temporary == nullLeaf)
 			throw std::invalid_argument("No such key in a map");
 
 		return temporary->value;
